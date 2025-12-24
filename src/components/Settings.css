@@ -1,0 +1,257 @@
+.settings {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.settings-header h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.settings-header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.settings-section {
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.section-content {
+  color: var(--text-primary);
+}
+
+.section-description {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.user-details h3 {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.user-details p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.currency-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.currency-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.currency-option:hover {
+  border-color: var(--primary-color);
+  background: rgba(46, 125, 50, 0.05);
+}
+
+.currency-option.selected {
+  border-color: var(--primary-color);
+  background: rgba(46, 125, 50, 0.1);
+}
+
+.currency-symbol {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  min-width: 30px;
+}
+
+.currency-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.currency-code {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.currency-name {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.theme-toggle {
+  display: flex;
+  gap: 16px;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  background: var(--background-color);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  flex: 1;
+  max-width: 150px;
+}
+
+.theme-option:hover {
+  border-color: var(--primary-color);
+  background: rgba(46, 125, 50, 0.05);
+}
+
+.theme-option.active {
+  border-color: var(--primary-color);
+  background: rgba(46, 125, 50, 0.1);
+  color: var(--primary-color);
+}
+
+.theme-option span {
+  font-weight: 500;
+  color: inherit;
+}
+
+.data-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.btn.danger {
+  color: #F44336;
+  border-color: #F44336;
+}
+
+.btn.danger:hover {
+  background: #F44336;
+  color: white;
+}
+
+.warning-text {
+  color: #F44336;
+  font-size: 0.9rem;
+  margin: 0;
+  font-style: italic;
+}
+
+.app-info {
+  text-align: center;
+  padding: 24px;
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.app-info h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.app-info p {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .settings {
+    padding: 16px;
+  }
+  
+  .settings-header h1 {
+    font-size: 2rem;
+  }
+  
+  .currency-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .theme-toggle {
+    flex-direction: column;
+  }
+  
+  .theme-option {
+    max-width: none;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+  }
+}
