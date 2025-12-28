@@ -32,8 +32,26 @@ class FarmManagementApp {
     }
 
     async initFirebase() {
+        console.log('Initializing Firebase...');
+        
+        // Check if Firebase is available (scripts loaded)
+        if (typeof firebase === 'undefined') {
+            console.log('Firebase not available - running in offline mode');
+            this.auth = null;
+            this.firestore = null;
+            return;
+        }
+        
         try {
-            // Firebase configuration - UPDATE WITH YOUR CONFIG or leave as is for offline mode
+            // Check if Firebase is already initialized
+            if (firebase.apps.length > 0) {
+                console.log('Firebase already initialized');
+                this.auth = firebase.auth();
+                this.firestore = firebase.firestore();
+                return;
+            }
+            
+            // Your Firebase config - UPDATE THIS WITH YOUR REAL CONFIG
             const firebaseConfig = {
                 apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
                 authDomain: "farmtrack-b470e.firebaseapp.com",
@@ -43,28 +61,32 @@ class FarmManagementApp {
                 appId: "1:572276398926:web:4b39dc570ce2077fae5c1f"
             };
     
-            // Check if we have a real Firebase config
+            // Check if this is a real config or dummy
             const hasRealConfig = firebaseConfig.apiKey && 
-                                 firebaseConfig.apiKey !== "AIzaSyDummyKeyReplaceWithYours" &&
-                                 firebaseConfig.projectId !== "your-project-id";
+                                 firebaseConfig.apiKey !== "AIzaSyDummyKeyReplaceWithYours";
             
-            if (hasRealConfig && window.firebase) {
-                // Initialize Firebase only if we have real config and Firebase is loaded
+            if (hasRealConfig) {
+                console.log('Initializing Firebase with real config');
+                // Initialize Firebase
                 firebase.initializeApp(firebaseConfig);
                 this.auth = firebase.auth();
                 this.firestore = firebase.firestore();
-                console.log('Firebase initialized with config');
+                
+                // Enable Firestore offline persistence
+                this.firestore.enablePersistence()
+                    .catch((err) => {
+                        console.warn('Firestore persistence error:', err);
+                    });
             } else {
-                // Set to null for offline mode
+                console.log('Using dummy Firebase config - running in offline mode');
                 this.auth = null;
                 this.firestore = null;
-                console.log('Firebase not initialized - using offline mode');
             }
         } catch (error) {
             console.error('Firebase initialization error:', error);
             this.auth = null;
             this.firestore = null;
-            console.log('Running in offline mode');
+            console.log('Running in offline mode due to error');
         }
     }
 
