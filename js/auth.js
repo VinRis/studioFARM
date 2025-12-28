@@ -41,11 +41,38 @@ class FarmAuth {
     // ... update other methods similarly with the check
 // Firebase Authentication Manager
 class FarmAuth {
-    constructor() {
-        this.auth = null;
-        this.currentUser = null;
-        this.authListeners = [];
+  constructor() {
+    this.auth = null;
+    this.currentUser = null;
+    this.authListeners = [];
+    
+    console.log('FarmAuth initializing...');
+    
+    // Check if Firebase is available AND initialized
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
+        console.log('Firebase auth available');
+        this.auth = firebase.auth();
+        
+        // Set up auth state listener
+        this.auth.onAuthStateChanged((user) => {
+            this.currentUser = user;
+            this.notifyAuthChange(user);
+        });
+    } else {
+        console.warn('Firebase auth not available - running in offline mode');
+        // Create a mock user for offline mode
+        this.currentUser = { 
+            email: 'offline@user.com', 
+            uid: 'offline-user',
+            displayName: 'Offline User'
+        };
+        
+        // Notify listeners after a short delay
+        setTimeout(() => {
+            this.notifyAuthChange(this.currentUser);
+        }, 100);
     }
+}
 
     init(firebaseAuth) {
         this.auth = firebaseAuth;
