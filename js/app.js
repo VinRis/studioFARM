@@ -162,13 +162,15 @@ class FarmManagementApp {
     selectLivestock(livestock) {
         this.currentLivestock = livestock;
         
-        // Show dairy-specific button
-        const addHerdBtn = document.getElementById('add-herd-btn');
-        addHerdBtn.style.display = livestock === 'dairy' ? 'flex' : 'none';
-        
-        // Switch to app screen
+        // FIRST switch screens, THEN find elements
         document.getElementById('welcome-screen').classList.remove('active');
         document.getElementById('app-screen').classList.add('active');
+        
+        // Now find the add-herd-btn (it exists in app-screen)
+        const addHerdBtn = document.getElementById('add-herd-btn');
+        if (addHerdBtn) {
+            addHerdBtn.style.display = livestock === 'dairy' ? 'flex' : 'none';
+        }
         
         // Update page title
         document.getElementById('page-title').textContent = 
@@ -178,10 +180,12 @@ class FarmManagementApp {
         this.loadDashboard();
         
         // Show welcome notification
-        ui.showNotification(
-            `Welcome to ${livestock === 'dairy' ? 'Dairy' : 'Poultry'} Management!`,
-            'success'
-        );
+        if (ui && ui.showNotification) {
+            ui.showNotification(
+                `Welcome to ${livestock === 'dairy' ? 'Dairy' : 'Poultry'} Management!`,
+                'success'
+            );
+        }
         
         // Save selection
         localStorage.setItem('selectedLivestock', livestock);
