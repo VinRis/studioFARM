@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear PWA Cache</title>
+</head>
+<body>
+    <h1>Clearing PWA Cache...</h1>
+    <script>
+        if ('serviceWorker' in navigator) {
+            // Unregister all service workers
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                registrations.forEach(function(registration) {
+                    registration.unregister();
+                    console.log('Unregistered:', registration.scope);
+                });
+            }).then(() => {
+                // Clear all caches
+                caches.keys().then(function(cacheNames) {
+                    cacheNames.forEach(function(cacheName) {
+                        caches.delete(cacheName);
+                        console.log('Deleted cache:', cacheName);
+                    });
+                }).then(() => {
+                    // Clear localStorage and IndexedDB
+                    localStorage.clear();
+                    indexedDB.databases().then(function(databases) {
+                        databases.forEach(function(db) {
+                            indexedDB.deleteDatabase(db.name);
+                        });
+                    }).then(() => {
+                        alert('All PWA caches cleared! Redirecting...');
+                        window.location.href = 'index.html';
+                    });
+                });
+            });
+        } else {
+            alert('Service Workers not supported');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
