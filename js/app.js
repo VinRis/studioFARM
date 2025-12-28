@@ -91,13 +91,6 @@ class FarmManagementApp {
     }
 
     setupEventListeners() {
-        // Livestock selection
-        document.querySelectorAll('.selection-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                this.selectLivestock(e.currentTarget.dataset.livestock);
-            });
-        });
-
         // Navigation buttons
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
