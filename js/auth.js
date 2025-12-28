@@ -4,6 +4,47 @@ class FarmAuth {
         this.auth = null;
         this.currentUser = null;
         this.authListeners = [];
+        
+        // Initialize only if Firebase is available
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            this.auth = firebase.auth();
+            
+            // Set up auth state listener
+            this.auth.onAuthStateChanged((user) => {
+                this.currentUser = user;
+                this.notifyAuthChange(user);
+            });
+        } else {
+            console.warn('Firebase auth not available - running in offline mode');
+        }
+    }
+    
+    // ... rest of the class remains the same, but add this check to each method:
+    
+    async signIn(email, password) {
+        if (!this.auth) {
+            console.warn('Firebase auth not available');
+            // For demo purposes, create a mock user
+            this.currentUser = { email: email, uid: 'offline-user' };
+            this.notifyAuthChange(this.currentUser);
+            return this.currentUser;
+        }
+        
+        try {
+            const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
+            return userCredential.user;
+        } catch (error) {
+            throw this.handleAuthError(error);
+        }
+    }
+    
+    // ... update other methods similarly with the check
+// Firebase Authentication Manager
+class FarmAuth {
+    constructor() {
+        this.auth = null;
+        this.currentUser = null;
+        this.authListeners = [];
     }
 
     init(firebaseAuth) {
