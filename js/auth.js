@@ -40,7 +40,7 @@ class FarmAuth {
     
     // ... update other methods similarly with the check
 // Firebase Authentication Manager
-class FarmAuth {
+class farmAuth {
   constructor() {
     this.auth = null;
     this.currentUser = null;
