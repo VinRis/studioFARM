@@ -7,6 +7,16 @@ class FarmSync {
         this.retryCount = 0;
         this.maxRetries = 3;
         this.firestore = null;
+        
+        console.log('FarmSync initializing...');
+        
+        // Check if Firebase is available
+        if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
+            console.log('Firestore available for sync');
+            this.firestore = firebase.firestore();
+        } else {
+            console.warn('Firestore not available - sync disabled');
+        }
     }
 
     async init() {
