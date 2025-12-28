@@ -32,22 +32,40 @@ class FarmManagementApp {
     }
 
     async initFirebase() {
-        // Firebase configuration - UPDATE WITH YOUR CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
-            authDomain: "farmtrack-b470e.firebaseapp.com",
-            projectId: "farmtrack-b470e",
-            storageBucket: "farmtrack-b470e.firebasestorage.app",
-            messagingSenderId: "572276398926",
-            appId: "1:572276398926:web:4b39dc570ce2077fae5c1f"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        
-        // Initialize services
-        this.auth = firebase.auth();
-        this.firestore = firebase.firestore();
+        try {
+            // Firebase configuration - UPDATE WITH YOUR CONFIG or leave as is for offline mode
+            const firebaseConfig = {
+                apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
+                authDomain: "farmtrack-b470e.firebaseapp.com",
+                projectId: "farmtrack-b470e",
+                storageBucket: "farmtrack-b470e.firebasestorage.app",
+                messagingSenderId: "572276398926",
+                appId: "1:572276398926:web:4b39dc570ce2077fae5c1f"
+            };
+    
+            // Check if we have a real Firebase config
+            const hasRealConfig = firebaseConfig.apiKey && 
+                                 firebaseConfig.apiKey !== "AIzaSyDummyKeyReplaceWithYours" &&
+                                 firebaseConfig.projectId !== "your-project-id";
+            
+            if (hasRealConfig && window.firebase) {
+                // Initialize Firebase only if we have real config and Firebase is loaded
+                firebase.initializeApp(firebaseConfig);
+                this.auth = firebase.auth();
+                this.firestore = firebase.firestore();
+                console.log('Firebase initialized with config');
+            } else {
+                // Set to null for offline mode
+                this.auth = null;
+                this.firestore = null;
+                console.log('Firebase not initialized - using offline mode');
+            }
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            this.auth = null;
+            this.firestore = null;
+            console.log('Running in offline mode');
+        }
     }
 
     setupEventListeners() {
