@@ -1,42 +1,48 @@
-// ⚠️ CRITICAL FIX: Force unregister old service workers
-if (self.location.href.includes('vinnis.github.io')) {
-  self.registration.unregister().then(() => {
-    console.log('Old service worker unregistered');
-    return self.clients.matchAll().then(clients => {
-      clients.forEach(client => client.navigate(client.url));
-    });
-  });
-}
-const CACHE_NAME = 'farm-management-v1.0.0';
+// Service Worker for Farm Management PWA
+const CACHE_NAME = 'farm-management-v1.0.1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/utils.js',
-  '/js/db.js',
-  '/js/auth.js',
-  '/js/sync.js',
-  '/js/ui.js',
-  '/js/charts.js',
-  '/js/forms.js',
-  '/js/pdf.js',
-  '/js/app.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/utils.js',
+  './js/db.js',
+  './js/auth.js',
+  './js/sync.js',
+  './js/ui.js',
+  './js/charts.js',
+  './js/forms.js',
+  './js/pdf.js',
+  './js/app.js',
+  './manifest.json'
 ];
 
-// Install event
+// Install event - cache essential files
 self.addEventListener('install', event => {
+  console.log('Service Worker installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        console.log('Caching essential files');
+        // Don't cache everything at once - cache critical files only
+        return cache.addAll([
+          './',
+          './index.html',
+          './css/styles.css',
+          './js/app.js',
+          './js/utils.js',
+          './js/db.js'
+        ]).catch(err => {
+          console.log('Cache addAll failed:', err);
+        });
       })
   );
+  // Force the waiting service worker to become active
+  self.skipWaiting();
 });
 
-// Activate event
+// Activate event - clean up old caches
 self.addEventListener('activate', event => {
+  console.log('Service Worker activating...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -47,16 +53,25 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // Take control of all clients
+      return self.clients.claim();
     })
   );
 });
 
-// Fetch event
+// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
+  // Skip non-GET requests and chrome-extension requests
+  if (event.request.method !== 'GET' || 
+      event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
+        // Return cached response if found
         if (response) {
           return response;
         }
@@ -64,27 +79,38 @@ self.addEventListener('fetch', event => {
         // Clone the request
         const fetchRequest = event.request.clone();
 
-        return fetch(fetchRequest).then(response => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        return fetch(fetchRequest)
+          .then(response => {
+            // Check if valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            // Cache the new response
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
             return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
+          })
+          .catch(() => {
+            // If fetch fails and it's an HTML request, return offline page
+            if (event.request.headers.get('accept').includes('text/html')) {
+              return caches.match('./index.html');
+            }
+            // For other requests, you might want to return a placeholder
+            return new Response('Offline', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({
+                'Content-Type': 'text/plain'
+              })
             });
-
-          return response;
-        }).catch(() => {
-          // If fetch fails, try to return offline page for HTML requests
-          if (event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('/');
-          }
-        });
+          });
       })
   );
 });
@@ -92,98 +118,38 @@ self.addEventListener('fetch', event => {
 // Background sync for offline data
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-data') {
+    console.log('Background sync triggered');
     event.waitUntil(syncData());
   }
 });
 
 async function syncData() {
-  try {
-    // Get data from IndexedDB that needs to be synced
-    const db = await openDatabase();
-    const unsyncedData = await getAllFromStore(db, 'syncQueue');
-    
-    for (const data of unsyncedData) {
-      // Attempt to sync with Firebase
-      const success = await syncWithFirebase(data);
-      if (success) {
-        // Remove from sync queue
-        await deleteFromStore(db, 'syncQueue', data.id);
-      }
-    }
-  } catch (error) {
-    console.error('Background sync failed:', error);
-  }
+  console.log('Attempting to sync data...');
+  // Implementation would go here
+  return Promise.resolve();
 }
 
-function openDatabase() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('FarmDB', 3);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-}
-
-function getAllFromStore(db, storeName) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName], 'readonly');
-    const store = transaction.objectStore(storeName);
-    const request = store.getAll();
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-}
-
-function deleteFromStore(db, storeName, id) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName], 'readwrite');
-    const store = transaction.objectStore(storeName);
-    const request = store.delete(id);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve();
-  });
-}
-
-async function syncWithFirebase(data) {
-  // This would be implemented with Firebase in the main app
-  // For service worker, we just return true for demo
-  return true;
-}
-
-// Push notifications for health reminders
+// Handle push notifications
 self.addEventListener('push', event => {
   const options = {
-    body: event.data ? event.data.text() : 'Health reminder for your livestock',
-    icon: 'icons/icon-192x192.png',
-    badge: 'icons/icon-72x72.png',
+    body: event.data ? event.data.text() : 'Farm Management Notification',
+    icon: './icons/icon-192x192.png',
+    badge: './icons/icon-72x72.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
       primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'view',
-        title: 'View Details'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ]
+    }
   };
 
   event.waitUntil(
-    self.registration.showNotification('Farm Health Reminder', options)
+    self.registration.showNotification('Farm Management', options)
   );
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-
-  if (event.action === 'view') {
-    clients.openWindow('/?page=health');
-  }
+  event.waitUntil(
+    clients.openWindow('./')
+  );
 });
