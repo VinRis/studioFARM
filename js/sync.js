@@ -6,32 +6,31 @@ class FarmSync {
         this.syncInterval = null;
         this.retryCount = 0;
         this.maxRetries = 3;
+        this.firestore = null;
     }
 
     async init() {
         // Check if Firebase is available
-        if (!window.firebase) {
+          if (typeof firebase === 'undefined' || !firebase.firestore) {
             console.warn('Firebase not available, sync disabled');
             return false;
         }
-
+        
+        try{
         // Initialize Firestore
         this.firestore = firebase.firestore();
         
         // Enable offline persistence
-        this.firestore.enablePersistence()
-            .then(() => {
-                console.log('Firestore offline persistence enabled');
-            })
-            .catch((err) => {
-                if (err.code === 'failed-precondition') {
-                    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-                } else if (err.code === 'unimplemented') {
-                    console.warn('The current browser doesn\'t support offline persistence.');
-                }
+        await this.firestore.enablePersistence({synchronizeTabs:True})
+            .catch((err)=>{
+                console.warn('Firestore persistence error:',err);
             });
-
-        return true;
+            
+          return true;
+        }catch(error){
+            console.error('Firestore init error:',error);
+            return false;
+        }
     }
 
     async startSync() {
