@@ -1,3 +1,12 @@
+// ⚠️ CRITICAL FIX: Force unregister old service workers
+if (self.location.href.includes('vinnis.github.io')) {
+  self.registration.unregister().then(() => {
+    console.log('Old service worker unregistered');
+    return self.clients.matchAll().then(clients => {
+      clients.forEach(client => client.navigate(client.url));
+    });
+  });
+}
 const CACHE_NAME = 'farm-management-v1.0.0';
 const urlsToCache = [
   '/',
